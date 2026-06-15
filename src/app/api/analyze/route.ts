@@ -8,9 +8,16 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       inputs: PricingInput[];
       titulo?: string;
+      impulso25Plus?: boolean;
+      superOdd?: boolean;
     };
     const titulo = body.titulo?.trim() || null;
-    const result = { ...analyzePricing(body.inputs), titulo };
+    const result = {
+      ...analyzePricing(body.inputs),
+      titulo,
+      impulso25Plus: body.impulso25Plus ?? false,
+      superOdd: body.superOdd ?? false,
+    };
 
     try {
       await saveAnalysisHistory(result);

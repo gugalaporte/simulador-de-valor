@@ -22,6 +22,8 @@ export interface HistorySession {
   consensoProbabilidade: number;
   valorApostado: number | null;
   resultado: BetResultado | null;
+  impulso25Plus: boolean;
+  superOdd: boolean;
 }
 
 export function historyRecordsToAnalysisResult(
@@ -64,6 +66,8 @@ export function historyRecordsToAnalysisResult(
     titulo: meta?.titulo ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
+    impulso25Plus: meta?.impulso25Plus ?? false,
+    superOdd: meta?.superOdd ?? false,
   };
 }
 

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dashboard } from "@/components/Dashboard";
+import { SessionFlagsBadges } from "@/components/SessionFlagsBadges";
 import {
   getClassificacaoBadgeVariant,
   getClassificacaoUpsideColor,
@@ -186,6 +187,10 @@ export function HistoryView() {
                     <Clock className="h-3.5 w-3.5" />
                     {formatDateTime(session.createdAt)}
                     <ResultadoBadge resultado={session.resultado} />
+                    <SessionFlagsBadges
+                      impulso25Plus={session.impulso25Plus}
+                      superOdd={session.superOdd}
+                    />
                   </div>
                   <p className="font-medium text-slate-100">
                     {session.titulo ?? session.fontes.join(" · ")}

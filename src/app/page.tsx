@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AppHeader, type AppTab } from "@/components/AppHeader";
 import { Dashboard } from "@/components/Dashboard";
 import { HistoryView } from "@/components/HistoryView";
-import { PricingForm } from "@/components/PricingForm";
+import { PricingForm, type AnalysisOptions } from "@/components/PricingForm";
 import { ReceitasView } from "@/components/ReceitasView";
 import type { AnalysisResult, BetResultado, PricingInput } from "@/lib/types";
 
@@ -14,7 +14,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleAnalyze(inputs: PricingInput[], titulo?: string) {
+  async function handleAnalyze(inputs: PricingInput[], options?: AnalysisOptions) {
     setIsLoading(true);
     setError(null);
 
@@ -22,7 +22,12 @@ export default function HomePage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inputs, titulo }),
+        body: JSON.stringify({
+          inputs,
+          titulo: options?.titulo,
+          impulso25Plus: options?.impulso25Plus ?? false,
+          superOdd: options?.superOdd ?? false,
+        }),
       });
 
       const data = await response.json();

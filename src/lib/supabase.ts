@@ -11,6 +11,8 @@ interface SessionRow {
   titulo: string | null;
   valor_apostado: number | null;
   resultado: BetResultado | null;
+  impulso_25_plus: boolean | null;
+  super_odd: boolean | null;
 }
 
 export async function saveAnalysisHistory(result: AnalysisResult) {
@@ -35,6 +37,8 @@ export async function saveAnalysisHistory(result: AnalysisResult) {
   const { error: sessionError } = await supabase.from("analysis_sessions").upsert({
     session_id: result.sessionId,
     titulo: result.titulo?.trim() || null,
+    impulso_25_plus: result.impulso25Plus ?? false,
+    super_odd: result.superOdd ?? false,
   });
 
   if (sessionError) {
@@ -69,6 +73,8 @@ export async function fetchAnalysisSessions(): Promise<SessionMeta[]> {
     valorApostado:
       row.valor_apostado !== null ? Number(row.valor_apostado) : null,
     resultado: row.resultado,
+    impulso25Plus: row.impulso_25_plus ?? false,
+    superOdd: row.super_odd ?? false,
   }));
 }
 

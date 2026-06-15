@@ -44,6 +44,8 @@ export interface SessionMeta {
   titulo: string | null;
   valorApostado: number | null;
   resultado: BetResultado | null;
+  impulso25Plus: boolean;
+  superOdd: boolean;
 }
 
 export interface AnalysisResult {
@@ -59,4 +61,6 @@ export interface AnalysisResult {
   rankingConfianca: SourceAnalysis[];
   valorApostado?: number | null;
   resultado?: BetResultado | null;
+  impulso25Plus?: boolean;
+  superOdd?: boolean;
 }

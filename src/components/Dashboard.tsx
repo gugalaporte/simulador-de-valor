@@ -9,6 +9,7 @@ import { cn, formatPercent } from "@/lib/utils";
 import { ComparisonTable } from "./ComparisonTable";
 import { ExecutiveSummary } from "./ExecutiveSummary";
 import { SessionBetForm } from "./SessionBetForm";
+import { SessionFlagsBadges } from "./SessionFlagsBadges";
 import { SessionTitleForm } from "./SessionTitleForm";
 
 interface DashboardProps {
@@ -35,6 +36,10 @@ export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardP
           <h2 className="text-xl font-semibold text-slate-100">{result.titulo}</h2>
         )
       )}
+      <SessionFlagsBadges
+        impulso25Plus={result.impulso25Plus}
+        superOdd={result.superOdd}
+      />
       <ExecutiveSummary result={result} />
       <ComparisonTable fontes={result.fontes} />
 

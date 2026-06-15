@@ -13,6 +13,8 @@ export function attachSessionMeta<T extends { sessionId: string }>(
   titulo: string | null;
   valorApostado: number | null;
   resultado: BetResultado | null;
+  impulso25Plus: boolean;
+  superOdd: boolean;
 } {
   const meta = metaMap.get(item.sessionId);
 
@@ -21,5 +23,7 @@ export function attachSessionMeta<T extends { sessionId: string }>(
     titulo: meta?.titulo ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
+    impulso25Plus: meta?.impulso25Plus ?? false,
+    superOdd: meta?.superOdd ?? false,
   };
 }

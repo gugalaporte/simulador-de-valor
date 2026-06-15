@@ -6,12 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FONTES } from "@/lib/sources";
 import type { PricingInput } from "@/lib/types";
 
+export interface AnalysisOptions {
+  titulo?: string;
+  impulso25Plus?: boolean;
+  superOdd?: boolean;
+}
+
 interface PricingFormProps {
-  onAnalyze: (inputs: PricingInput[], titulo?: string) => void;
+  onAnalyze: (inputs: PricingInput[], options?: AnalysisOptions) => void;
   isLoading?: boolean;
 }
 
@@ -24,6 +31,8 @@ const EMPTY_ROWS = [
 export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
   const [rows, setRows] = useState(EMPTY_ROWS);
   const [titulo, setTitulo] = useState("");
+  const [impulso25Plus, setImpulso25Plus] = useState(false);
+  const [superOdd, setSuperOdd] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function updateRow(index: number, field: "odd" | "fonte", value: string) {
@@ -86,7 +95,11 @@ export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
       return;
     }
 
-    onAnalyze(inputs, titulo.trim() || undefined);
+    onAnalyze(inputs, {
+      titulo: titulo.trim() || undefined,
+      impulso25Plus,
+      superOdd,
+    });
   }
 
   return (
@@ -165,6 +178,31 @@ export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
               </div>
             );
           })}
+
+          <div className="flex flex-wrap items-center gap-6 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <div className="flex items-center gap-3">
+              <Label htmlFor="impulso-25" className="cursor-pointer text-slate-300">
+                Impulso 25%+
+              </Label>
+              <Switch
+                id="impulso-25"
+                checked={impulso25Plus}
+                onCheckedChange={setImpulso25Plus}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Label htmlFor="super-odd" className="cursor-pointer text-slate-300">
+                Odd Aumentada
+              </Label>
+              <Switch
+                id="super-odd"
+                checked={superOdd}
+                onCheckedChange={setSuperOdd}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
 
           {error && (
             <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
