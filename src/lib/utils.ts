@@ -9,6 +9,20 @@ export function formatPercent(value: number, decimals = 2): string {
   return `${(value * 100).toFixed(decimals)}%`;
 }
 
+export function formatValorRelativo(value: number): string {
+  return `${value.toFixed(2)}x`;
+}
+
+export function formatSignedPercent(value: number, decimals = 2): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${(value * 100).toFixed(decimals)}%`;
+}
+
+export function formatSignedPercentPoints(value: number, decimals = 2): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${(value * 100).toFixed(decimals)} pp`;
+}
+
 export function formatPercentPoints(value: number, decimals = 2): string {
   return `${(value * 100).toFixed(decimals)} pp`;
 }

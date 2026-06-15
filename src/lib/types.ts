@@ -11,6 +11,18 @@ export type ZScoreClassificacao =
   | "Muito Acima da Média"
   | "Excepcional";
 
+export type OportunidadeClassificacao =
+  | "Ruído"
+  | "Interessante"
+  | "Forte"
+  | "Excepcional";
+
+export type EficienciaClassificacao =
+  | "Mercado Eficiente"
+  | "Pequena Divergência"
+  | "Divergência Relevante"
+  | "Divergência Excepcional";
+
 export interface SourceAnalysis {
   fonte: string;
   odd: number;
@@ -21,6 +33,26 @@ export interface SourceAnalysis {
   zScore: number;
   classificacao: UpsideClassificacao;
   zClassificacao: ZScoreClassificacao;
+  valorRelativo: number;
+  oportunidadeScore: number;
+  oportunidadeClassificacao: OportunidadeClassificacao;
+}
+
+export type SourceAnalysisBase = Omit<
+  SourceAnalysis,
+  "valorRelativo" | "oportunidadeScore" | "oportunidadeClassificacao"
+>;
+
+export interface ValorRelativoInfo {
+  fonte: string;
+  valorRelativo: number;
+}
+
+export interface MarketEfficiency {
+  maiorProbabilidade: number;
+  menorProbabilidade: number;
+  eficiencia: number;
+  classificacao: EficienciaClassificacao;
 }
 
 export interface HistoryRecord {
@@ -58,6 +90,10 @@ export interface AnalysisResult {
   fonteAbaixoConsenso: string;
   melhorPreco: SourceAnalysis;
   maiorUpside: SourceAnalysis;
+  melhorOportunidade: SourceAnalysis;
+  maiorValorRelativo: ValorRelativoInfo;
+  eficienciaMercado: MarketEfficiency;
+  diagnostico: string;
   rankingConfianca: SourceAnalysis[];
   valorApostado?: number | null;
   resultado?: BetResultado | null;

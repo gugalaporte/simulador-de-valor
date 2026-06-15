@@ -1,10 +1,11 @@
 import type {
   AnalysisResult,
   PricingInput,
-  SourceAnalysis,
+  SourceAnalysisBase,
   UpsideClassificacao,
   ZScoreClassificacao,
 } from "./types";
+import { completeAnalysisResult } from "./metrics";
 
 function mean(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -65,7 +66,7 @@ export function analyzePricing(inputs: PricingInput[]): AnalysisResult {
   const mediaUpsides = mean(upsides);
   const desvioUpsides = stdDev(upsides);
 
-  const fontes: SourceAnalysis[] = validInputs.map((input, index) => {
+  const fontes: SourceAnalysisBase[] = validInputs.map((input, index) => {
     const probabilidadeImplicita = 1 / input.odd;
     const upside = upsides[index];
     const gap = consensoProbabilidade - probabilidadeImplicita;
@@ -90,17 +91,13 @@ export function analyzePricing(inputs: PricingInput[]): AnalysisResult {
   });
 
   const sortedByOdd = [...fontes].sort((a, b) => a.odd - b.odd);
-  const sortedByUpside = [...fontes].sort((a, b) => b.upside - a.upside);
 
-  return {
+  return completeAnalysisResult({
     sessionId: crypto.randomUUID(),
     fontes,
     consensoProbabilidade,
     consensoOdd,
     fonteAcimaConsenso: sortedByOdd[sortedByOdd.length - 1].fonte,
     fonteAbaixoConsenso: sortedByOdd[0].fonte,
-    melhorPreco: sortedByOdd[sortedByOdd.length - 1],
-    maiorUpside: sortedByUpside[0],
-    rankingConfianca: sortedByUpside,
-  };
+  });
 }

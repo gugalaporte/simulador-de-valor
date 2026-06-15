@@ -1,13 +1,11 @@
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getClassificacaoBadgeVariant,
-  getClassificacaoUpsideColor,
-} from "@/lib/classifications";
 import type { AnalysisResult, BetResultado } from "@/lib/types";
-import { cn, formatPercent } from "@/lib/utils";
+import { formatOdd, formatPercent } from "@/lib/utils";
+import { AutoDiagnostico } from "./AutoDiagnostico";
 import { ComparisonTable } from "./ComparisonTable";
+import { EficienciaMercado } from "./EficienciaMercado";
 import { ExecutiveSummary } from "./ExecutiveSummary";
+import { RankingConfianca } from "./RankingConfianca";
 import { SessionBetForm } from "./SessionBetForm";
 import { SessionFlagsBadges } from "./SessionFlagsBadges";
 import { SessionTitleForm } from "./SessionTitleForm";
@@ -41,6 +39,8 @@ export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardP
         superOdd={result.superOdd}
       />
       <ExecutiveSummary result={result} />
+      <AutoDiagnostico texto={result.diagnostico} />
+      <EficienciaMercado eficiencia={result.eficienciaMercado} />
       <ComparisonTable fontes={result.fontes} />
 
       <SessionBetForm
@@ -65,7 +65,7 @@ export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardP
           <div>
             <p className="text-xs text-slate-500">Odd Consenso</p>
             <p className="font-mono text-lg text-cyan-300">
-              {result.consensoOdd.toFixed(2)}
+              {formatOdd(result.consensoOdd)}
             </p>
           </div>
           <div>
@@ -79,43 +79,7 @@ export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardP
         </CardContent>
       </Card>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          Ranking de Confiança
-        </h2>
-        <div className="space-y-2">
-          {result.rankingConfianca.map((fonte, index) => (
-            <Card key={fonte.fonte} className="border-slate-800/80">
-              <CardHeader className="flex-row items-center justify-between space-y-0 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-sm font-bold text-emerald-400">
-                    {index + 1}
-                  </span>
-                  <CardTitle className="text-base">{fonte.fonte}</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "font-mono text-sm",
-                      getClassificacaoUpsideColor(fonte.classificacao)
-                    )}
-                  >
-                    {formatPercent(fonte.upside)}
-                  </span>
-                  <Badge variant={getClassificacaoBadgeVariant(fonte.classificacao)}>
-                    {fonte.classificacao}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-3 pt-0">
-                <p className="text-xs text-slate-500">
-                  Z-Score: {fonte.zScore.toFixed(2)} · {fonte.zClassificacao}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      <RankingConfianca fontes={result.rankingConfianca} />
     </div>
   );
 }

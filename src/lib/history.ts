@@ -2,12 +2,13 @@ import {
   classifyUpside,
   classifyZScore,
 } from "./calculations";
+import { completeAnalysisResult } from "./metrics";
 import type {
   AnalysisResult,
   BetResultado,
   HistoryRecord,
   SessionMeta,
-  SourceAnalysis,
+  SourceAnalysisBase,
   UpsideClassificacao,
 } from "./types";
 import { attachSessionMeta, sessionMetaMap } from "./session-meta";
@@ -31,7 +32,7 @@ export function historyRecordsToAnalysisResult(
   records: HistoryRecord[],
   meta?: SessionMeta | null
 ): AnalysisResult {
-  const fontes: SourceAnalysis[] = records.map((record) => {
+  const fontes: SourceAnalysisBase[] = records.map((record) => {
     const upside = Number(record.upside);
     const zScore = Number(record.z_score);
 
@@ -51,24 +52,20 @@ export function historyRecordsToAnalysisResult(
   const consensoProbabilidade = Number(records[0].consenso);
   const consensoOdd = 1 / consensoProbabilidade;
   const sortedByOdd = [...fontes].sort((a, b) => a.odd - b.odd);
-  const sortedByUpside = [...fontes].sort((a, b) => b.upside - a.upside);
 
-  return {
+  return completeAnalysisResult({
     sessionId,
     fontes,
     consensoProbabilidade,
     consensoOdd,
     fonteAcimaConsenso: sortedByOdd[sortedByOdd.length - 1].fonte,
     fonteAbaixoConsenso: sortedByOdd[0].fonte,
-    melhorPreco: sortedByOdd[sortedByOdd.length - 1],
-    maiorUpside: sortedByUpside[0],
-    rankingConfianca: sortedByUpside,
     titulo: meta?.titulo ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
     impulso25Plus: meta?.impulso25Plus ?? false,
     superOdd: meta?.superOdd ?? false,
-  };
+  });
 }
 
 export function groupHistoryBySession(
