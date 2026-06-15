@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   groupHistoryBySession,
   historyRecordsToAnalysisResult,
+  listAllSessions,
 } from "@/lib/history";
 import {
   fetchAnalysisHistory,
@@ -28,8 +29,13 @@ export async function GET(request: Request) {
       const sessionRecords = records.filter(
         (record) => record.session_id === sessionId
       );
+      const meta = metaMap.get(sessionId);
 
       if (sessionRecords.length === 0) {
+        if (meta?.analisePessoal) {
+          return NextResponse.json({ personalBet: meta });
+        }
+
         return NextResponse.json(
           { error: "Análise não encontrada." },
           { status: 404 }
@@ -40,13 +46,13 @@ export async function GET(request: Request) {
         result: historyRecordsToAnalysisResult(
           sessionId,
           sessionRecords,
-          metaMap.get(sessionId)
+          meta
         ),
       });
     }
 
     return NextResponse.json({
-      sessions: groupHistoryBySession(records, sessions),
+      sessions: listAllSessions(records, sessions),
     });
   } catch (error) {
     console.error("Erro ao buscar histórico:", error);
@@ -65,6 +71,7 @@ export async function PATCH(request: Request) {
       titulo?: string | null;
       valorApostado?: number | null;
       resultado?: BetResultado | null;
+      oddAposta?: number | null;
     };
 
     if (!body.sessionId) {
@@ -96,10 +103,22 @@ export async function PATCH(request: Request) {
       );
     }
 
+    if (
+      body.oddAposta !== undefined &&
+      body.oddAposta !== null &&
+      body.oddAposta <= 1
+    ) {
+      return NextResponse.json(
+        { error: "Odd deve ser maior que 1." },
+        { status: 400 }
+      );
+    }
+
     await updateAnalysisSession(body.sessionId, {
       titulo: body.titulo,
       valorApostado: body.valorApostado,
       resultado: body.resultado,
+      oddAposta: body.oddAposta,
     });
 
     return NextResponse.json({ success: true });

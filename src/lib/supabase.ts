@@ -13,6 +13,24 @@ interface SessionRow {
   resultado: BetResultado | null;
   impulso_25_plus: boolean | null;
   super_odd: boolean | null;
+  analise_pessoal: boolean | null;
+  odd_aposta: number | null;
+  created_at: string;
+}
+
+function mapSessionRow(row: SessionRow): SessionMeta {
+  return {
+    sessionId: row.session_id,
+    titulo: row.titulo?.trim() || null,
+    valorApostado:
+      row.valor_apostado !== null ? Number(row.valor_apostado) : null,
+    resultado: row.resultado,
+    impulso25Plus: row.impulso_25_plus ?? false,
+    superOdd: row.super_odd ?? false,
+    analisePessoal: row.analise_pessoal ?? false,
+    oddAposta: row.odd_aposta !== null ? Number(row.odd_aposta) : null,
+    createdAt: row.created_at,
+  };
 }
 
 export async function saveAnalysisHistory(result: AnalysisResult) {
@@ -39,6 +57,7 @@ export async function saveAnalysisHistory(result: AnalysisResult) {
     titulo: result.titulo?.trim() || null,
     impulso_25_plus: result.impulso25Plus ?? false,
     super_odd: result.superOdd ?? false,
+    analise_pessoal: false,
   });
 
   if (sessionError) {
@@ -67,15 +86,33 @@ export async function fetchAnalysisSessions(): Promise<SessionMeta[]> {
     throw error;
   }
 
-  return ((data as SessionRow[]) ?? []).map((row) => ({
-    sessionId: row.session_id,
-    titulo: row.titulo?.trim() || null,
-    valorApostado:
-      row.valor_apostado !== null ? Number(row.valor_apostado) : null,
-    resultado: row.resultado,
-    impulso25Plus: row.impulso_25_plus ?? false,
-    superOdd: row.super_odd ?? false,
-  }));
+  return ((data as SessionRow[]) ?? []).map(mapSessionRow);
+}
+
+export async function createPersonalBet(data: {
+  titulo?: string | null;
+  valorApostado: number;
+  oddAposta: number;
+  resultado?: BetResultado | null;
+}) {
+  const sessionId = crypto.randomUUID();
+
+  const { error } = await supabase.from("analysis_sessions").insert({
+    session_id: sessionId,
+    titulo: data.titulo?.trim() || "Análise Pessoal",
+    valor_apostado: data.valorApostado,
+    odd_aposta: data.oddAposta,
+    resultado: data.resultado ?? null,
+    analise_pessoal: true,
+    impulso_25_plus: false,
+    super_odd: false,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return sessionId;
 }
 
 export async function updateAnalysisSession(
@@ -84,6 +121,7 @@ export async function updateAnalysisSession(
     titulo?: string | null;
     valorApostado?: number | null;
     resultado?: BetResultado | null;
+    oddAposta?: number | null;
   }
 ) {
   const payload: Record<string, unknown> = { session_id: sessionId };
@@ -98,6 +136,10 @@ export async function updateAnalysisSession(
 
   if ("resultado" in updates) {
     payload.resultado = updates.resultado;
+  }
+
+  if ("oddAposta" in updates) {
+    payload.odd_aposta = updates.oddAposta;
   }
 
   const { error } = await supabase

@@ -5,13 +5,14 @@ import { ChevronRight, Clock, History, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PersonalBetDetail } from "@/components/PersonalBetDetail";
 import { Dashboard } from "@/components/Dashboard";
 import { SessionFlagsBadges } from "@/components/SessionFlagsBadges";
 import {
   getClassificacaoBadgeVariant,
   getClassificacaoUpsideColor,
 } from "@/lib/classifications";
-import type { AnalysisResult, BetResultado } from "@/lib/types";
+import type { AnalysisResult, BetResultado, SessionMeta } from "@/lib/types";
 import type { HistorySession } from "@/lib/history";
 import { cn, formatCurrency, formatDateTime, formatOdd, formatPercent } from "@/lib/utils";
 
@@ -30,6 +31,8 @@ export function HistoryView() {
   const [selectedResult, setSelectedResult] = useState<AnalysisResult | null>(
     null
   );
+  const [selectedPersonalBet, setSelectedPersonalBet] =
+    useState<SessionMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +75,13 @@ export function HistoryView() {
         throw new Error(data.error ?? "Falha ao carregar análise.");
       }
 
-      setSelectedResult(data.result);
+      if (data.personalBet) {
+        setSelectedPersonalBet(data.personalBet);
+        setSelectedResult(null);
+      } else {
+        setSelectedResult(data.result);
+        setSelectedPersonalBet(null);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(
@@ -110,6 +119,37 @@ export function HistoryView() {
             }
           : session
       )
+    );
+  }
+
+  function handlePersonalBetUpdate(bet: SessionMeta) {
+    setSelectedPersonalBet(bet);
+    setSessions((current) =>
+      current.map((session) =>
+        session.sessionId === bet.sessionId
+          ? {
+              ...session,
+              titulo: bet.titulo,
+              valorApostado: bet.valorApostado,
+              oddAposta: bet.oddAposta,
+              resultado: bet.resultado,
+              melhorPreco: {
+                fonte: bet.titulo?.trim() || "Análise Pessoal",
+                odd: bet.oddAposta ?? session.melhorPreco.odd,
+              },
+            }
+          : session
+      )
+    );
+  }
+
+  if (selectedPersonalBet) {
+    return (
+      <PersonalBetDetail
+        bet={selectedPersonalBet}
+        onBack={() => setSelectedPersonalBet(null)}
+        onUpdated={handlePersonalBetUpdate}
+      />
     );
   }
 
@@ -177,8 +217,10 @@ export function HistoryView() {
               disabled={isLoadingDetail}
               className={cn(
                 "w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-left transition-colors hover:border-slate-700 hover:bg-slate-900 active:scale-[0.99] disabled:opacity-60",
-                session.maiorUpside.classificacao === "Muito Forte" &&
-                  "border-violet-500/30"
+                !session.analisePessoal &&
+                  session.maiorUpside.classificacao === "Muito Forte" &&
+                  "border-violet-500/30",
+                session.analisePessoal && "border-sky-500/30"
               )}
             >
               <div className="flex items-start justify-between gap-3">
@@ -187,20 +229,45 @@ export function HistoryView() {
                     <Clock className="h-3.5 w-3.5" />
                     {formatDateTime(session.createdAt)}
                     <ResultadoBadge resultado={session.resultado} />
+                    {session.analisePessoal && (
+                      <Badge variant="default">Análise Pessoal</Badge>
+                    )}
                     <SessionFlagsBadges
                       impulso25Plus={session.impulso25Plus}
                       superOdd={session.superOdd}
                     />
                   </div>
                   <p className="font-medium text-slate-100">
-                    {session.titulo ?? session.fontes.join(" · ")}
+                    {session.titulo ??
+                      (session.analisePessoal
+                        ? "Análise Pessoal"
+                        : session.fontes.join(" · "))}
                   </p>
-                  {session.titulo && (
+                  {session.titulo && session.fontes.length > 0 && (
                     <p className="text-sm text-slate-400">
                       {session.fontes.join(" · ")}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-3 text-sm">
+                    {session.analisePessoal ? (
+                      <>
+                        <span className="text-slate-400">
+                          Odd:{" "}
+                          <span className="font-mono text-emerald-400">
+                            {formatOdd(session.oddAposta ?? session.melhorPreco.odd)}
+                          </span>
+                        </span>
+                        {session.valorApostado !== null && (
+                          <span className="text-slate-400">
+                            Apostado:{" "}
+                            <span className="font-mono text-amber-300">
+                              {formatCurrency(session.valorApostado)}
+                            </span>
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
                     <span className="text-slate-400">
                       Melhor:{" "}
                       <span className="font-mono text-emerald-400">
@@ -233,6 +300,8 @@ export function HistoryView() {
                           {formatCurrency(session.valorApostado)}
                         </span>
                       </span>
+                    )}
+                      </>
                     )}
                   </div>
                 </div>

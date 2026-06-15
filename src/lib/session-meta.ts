@@ -15,6 +15,9 @@ export function attachSessionMeta<T extends { sessionId: string }>(
   resultado: BetResultado | null;
   impulso25Plus: boolean;
   superOdd: boolean;
+  analisePessoal: boolean;
+  oddAposta: number | null;
+  createdAt: string;
 } {
   const meta = metaMap.get(item.sessionId);
 
@@ -25,5 +28,8 @@ export function attachSessionMeta<T extends { sessionId: string }>(
     resultado: meta?.resultado ?? null,
     impulso25Plus: meta?.impulso25Plus ?? false,
     superOdd: meta?.superOdd ?? false,
+    analisePessoal: meta?.analisePessoal ?? false,
+    oddAposta: meta?.oddAposta ?? null,
+    createdAt: meta?.createdAt ?? new Date(0).toISOString(),
   };
 }

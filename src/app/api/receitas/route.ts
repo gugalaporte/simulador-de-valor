@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { groupHistoryBySession } from "@/lib/history";
+import { groupHistoryBySession, listAllSessions } from "@/lib/history";
 import { calculateReceitas } from "@/lib/receitas";
 import {
   fetchAnalysisHistory,
@@ -14,7 +14,7 @@ export async function GET() {
       fetchAnalysisSessions(),
     ]);
 
-    const historySessions = groupHistoryBySession(records, sessions);
+    const historySessions = listAllSessions(records, sessions);
     const stats = calculateReceitas(historySessions);
 
     return NextResponse.json({ stats });

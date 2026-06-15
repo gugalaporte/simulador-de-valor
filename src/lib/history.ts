@@ -25,6 +25,45 @@ export interface HistorySession {
   resultado: BetResultado | null;
   impulso25Plus: boolean;
   superOdd: boolean;
+  analisePessoal: boolean;
+  oddAposta: number | null;
+}
+
+function personalSessionToHistory(meta: SessionMeta): HistorySession {
+  const label = meta.titulo?.trim() || "Análise Pessoal";
+  const odd = meta.oddAposta ?? 1;
+
+  return {
+    sessionId: meta.sessionId,
+    createdAt: meta.createdAt,
+    titulo: meta.titulo,
+    fontes: [],
+    melhorPreco: { fonte: label, odd },
+    maiorUpside: { fonte: label, upside: 0, classificacao: "Fraco" },
+    consensoProbabilidade: 0,
+    valorApostado: meta.valorApostado,
+    resultado: meta.resultado,
+    impulso25Plus: false,
+    superOdd: false,
+    analisePessoal: true,
+    oddAposta: meta.oddAposta,
+  };
+}
+
+export function listAllSessions(
+  records: HistoryRecord[],
+  sessionMetas: SessionMeta[] = []
+): HistorySession[] {
+  const comparative = groupHistoryBySession(records, sessionMetas);
+  const comparativeIds = new Set(comparative.map((session) => session.sessionId));
+
+  const personal = sessionMetas
+    .filter((meta) => meta.analisePessoal && !comparativeIds.has(meta.sessionId))
+    .map(personalSessionToHistory);
+
+  return [...comparative, ...personal].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
 export function historyRecordsToAnalysisResult(

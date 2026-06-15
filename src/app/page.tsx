@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AppHeader, type AppTab } from "@/components/AppHeader";
 import { Dashboard } from "@/components/Dashboard";
 import { HistoryView } from "@/components/HistoryView";
+import { PersonalBetForm } from "@/components/PersonalBetForm";
 import { PricingForm, type AnalysisOptions } from "@/components/PricingForm";
 import { ReceitasView } from "@/components/ReceitasView";
 import type { AnalysisResult, BetResultado, PricingInput } from "@/lib/types";
@@ -79,6 +80,8 @@ export default function HomePage() {
                 {error}
               </p>
             )}
+
+            <PersonalBetForm />
 
             <PricingForm onAnalyze={handleAnalyze} isLoading={isLoading} />
 

@@ -78,6 +78,9 @@ export interface SessionMeta {
   resultado: BetResultado | null;
   impulso25Plus: boolean;
   superOdd: boolean;
+  analisePessoal: boolean;
+  oddAposta: number | null;
+  createdAt: string;
 }
 
 export interface AnalysisResult {
