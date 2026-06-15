@@ -41,12 +41,14 @@ export type BetResultado = "green" | "red";
 
 export interface SessionMeta {
   sessionId: string;
+  titulo: string | null;
   valorApostado: number | null;
   resultado: BetResultado | null;
 }
 
 export interface AnalysisResult {
   sessionId: string;
+  titulo?: string | null;
   fontes: SourceAnalysis[];
   consensoProbabilidade: number;
   consensoOdd: number;

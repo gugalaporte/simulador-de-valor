@@ -11,7 +11,7 @@ import { FONTES } from "@/lib/sources";
 import type { PricingInput } from "@/lib/types";
 
 interface PricingFormProps {
-  onAnalyze: (inputs: PricingInput[]) => void;
+  onAnalyze: (inputs: PricingInput[], titulo?: string) => void;
   isLoading?: boolean;
 }
 
@@ -23,6 +23,7 @@ const EMPTY_ROWS = [
 
 export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
   const [rows, setRows] = useState(EMPTY_ROWS);
+  const [titulo, setTitulo] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function updateRow(index: number, field: "odd" | "fonte", value: string) {
@@ -85,7 +86,7 @@ export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
       return;
     }
 
-    onAnalyze(inputs);
+    onAnalyze(inputs, titulo.trim() || undefined);
   }
 
   return (
@@ -101,6 +102,18 @@ export function PricingForm({ onAnalyze, isLoading }: PricingFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <Label htmlFor="titulo">Título da análise</Label>
+            <Input
+              id="titulo"
+              placeholder="Ex: Flamengo x Palmeiras - Over 2.5"
+              value={titulo}
+              maxLength={120}
+              onChange={(e) => setTitulo(e.target.value)}
+            />
+            <p className="text-xs text-slate-500">Opcional — ajuda a identificar no histórico.</p>
+          </div>
+
           {rows.map((row, index) => {
             const availableFontes = getAvailableFontes(index);
             const selectedUnavailable =

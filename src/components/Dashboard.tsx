@@ -9,18 +9,32 @@ import { cn, formatPercent } from "@/lib/utils";
 import { ComparisonTable } from "./ComparisonTable";
 import { ExecutiveSummary } from "./ExecutiveSummary";
 import { SessionBetForm } from "./SessionBetForm";
+import { SessionTitleForm } from "./SessionTitleForm";
 
 interface DashboardProps {
   result: AnalysisResult;
+  titleEditable?: boolean;
   onSessionUpdate?: (data: {
-    valorApostado: number | null;
-    resultado: BetResultado | null;
+    titulo?: string | null;
+    valorApostado?: number | null;
+    resultado?: BetResultado | null;
   }) => void;
 }
 
-export function Dashboard({ result, onSessionUpdate }: DashboardProps) {
+export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      {titleEditable ? (
+        <SessionTitleForm
+          sessionId={result.sessionId}
+          initialTitulo={result.titulo}
+          onSaved={(titulo) => onSessionUpdate?.({ titulo })}
+        />
+      ) : (
+        result.titulo && (
+          <h2 className="text-xl font-semibold text-slate-100">{result.titulo}</h2>
+        )
+      )}
       <ExecutiveSummary result={result} />
       <ComparisonTable fontes={result.fontes} />
 

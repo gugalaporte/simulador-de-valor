@@ -83,15 +83,17 @@ export function HistoryView() {
   }
 
   function handleSessionUpdate(data: {
-    valorApostado: number | null;
-    resultado: BetResultado | null;
+    titulo?: string | null;
+    valorApostado?: number | null;
+    resultado?: BetResultado | null;
   }) {
     if (!selectedResult) return;
 
     setSelectedResult({
       ...selectedResult,
-      valorApostado: data.valorApostado,
-      resultado: data.resultado,
+      ...(data.titulo !== undefined && { titulo: data.titulo }),
+      ...(data.valorApostado !== undefined && { valorApostado: data.valorApostado }),
+      ...(data.resultado !== undefined && { resultado: data.resultado }),
     });
 
     setSessions((current) =>
@@ -99,8 +101,11 @@ export function HistoryView() {
         session.sessionId === selectedResult.sessionId
           ? {
               ...session,
-              valorApostado: data.valorApostado,
-              resultado: data.resultado,
+              ...(data.titulo !== undefined && { titulo: data.titulo }),
+              ...(data.valorApostado !== undefined && {
+                valorApostado: data.valorApostado,
+              }),
+              ...(data.resultado !== undefined && { resultado: data.resultado }),
             }
           : session
       )
@@ -119,6 +124,7 @@ export function HistoryView() {
         </Button>
         <Dashboard
           result={selectedResult}
+          titleEditable
           onSessionUpdate={handleSessionUpdate}
         />
       </div>
@@ -182,8 +188,13 @@ export function HistoryView() {
                     <ResultadoBadge resultado={session.resultado} />
                   </div>
                   <p className="font-medium text-slate-100">
-                    {session.fontes.join(" · ")}
+                    {session.titulo ?? session.fontes.join(" · ")}
                   </p>
+                  {session.titulo && (
+                    <p className="text-sm text-slate-400">
+                      {session.fontes.join(" · ")}
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-3 text-sm">
                     <span className="text-slate-400">
                       Melhor:{" "}

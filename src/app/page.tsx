@@ -14,7 +14,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleAnalyze(inputs: PricingInput[]) {
+  async function handleAnalyze(inputs: PricingInput[], titulo?: string) {
     setIsLoading(true);
     setError(null);
 
@@ -22,7 +22,7 @@ export default function HomePage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inputs }),
+        body: JSON.stringify({ inputs, titulo }),
       });
 
       const data = await response.json();
@@ -44,15 +44,19 @@ export default function HomePage() {
   }
 
   function handleSessionUpdate(data: {
-    valorApostado: number | null;
-    resultado: BetResultado | null;
+    titulo?: string | null;
+    valorApostado?: number | null;
+    resultado?: BetResultado | null;
   }) {
     setResult((current) =>
       current
         ? {
             ...current,
-            valorApostado: data.valorApostado,
-            resultado: data.resultado,
+            ...(data.titulo !== undefined && { titulo: data.titulo }),
+            ...(data.valorApostado !== undefined && {
+              valorApostado: data.valorApostado,
+            }),
+            ...(data.resultado !== undefined && { resultado: data.resultado }),
           }
         : null
     );

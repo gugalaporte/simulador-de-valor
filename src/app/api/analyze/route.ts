@@ -5,8 +5,12 @@ import type { PricingInput } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { inputs: PricingInput[] };
-    const result = analyzePricing(body.inputs);
+    const body = (await request.json()) as {
+      inputs: PricingInput[];
+      titulo?: string;
+    };
+    const titulo = body.titulo?.trim() || null;
+    const result = { ...analyzePricing(body.inputs), titulo };
 
     try {
       await saveAnalysisHistory(result);

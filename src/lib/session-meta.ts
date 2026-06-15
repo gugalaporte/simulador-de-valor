@@ -9,11 +9,16 @@ export function sessionMetaMap(
 export function attachSessionMeta<T extends { sessionId: string }>(
   item: T,
   metaMap: Map<string, SessionMeta>
-): T & { valorApostado: number | null; resultado: BetResultado | null } {
+): T & {
+  titulo: string | null;
+  valorApostado: number | null;
+  resultado: BetResultado | null;
+} {
   const meta = metaMap.get(item.sessionId);
 
   return {
     ...item,
+    titulo: meta?.titulo ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
   };

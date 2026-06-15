@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface SessionRow {
   session_id: string;
+  titulo: string | null;
   valor_apostado: number | null;
   resultado: BetResultado | null;
 }
@@ -31,9 +32,10 @@ export async function saveAnalysisHistory(result: AnalysisResult) {
     throw error;
   }
 
-  const { error: sessionError } = await supabase
-    .from("analysis_sessions")
-    .upsert({ session_id: result.sessionId });
+  const { error: sessionError } = await supabase.from("analysis_sessions").upsert({
+    session_id: result.sessionId,
+    titulo: result.titulo?.trim() || null,
+  });
 
   if (sessionError) {
     throw sessionError;
@@ -63,6 +65,7 @@ export async function fetchAnalysisSessions(): Promise<SessionMeta[]> {
 
   return ((data as SessionRow[]) ?? []).map((row) => ({
     sessionId: row.session_id,
+    titulo: row.titulo?.trim() || null,
     valorApostado:
       row.valor_apostado !== null ? Number(row.valor_apostado) : null,
     resultado: row.resultado,
@@ -71,9 +74,17 @@ export async function fetchAnalysisSessions(): Promise<SessionMeta[]> {
 
 export async function updateAnalysisSession(
   sessionId: string,
-  updates: { valorApostado?: number | null; resultado?: BetResultado | null }
+  updates: {
+    titulo?: string | null;
+    valorApostado?: number | null;
+    resultado?: BetResultado | null;
+  }
 ) {
   const payload: Record<string, unknown> = { session_id: sessionId };
+
+  if ("titulo" in updates) {
+    payload.titulo = updates.titulo?.trim() || null;
+  }
 
   if ("valorApostado" in updates) {
     payload.valor_apostado = updates.valorApostado;

@@ -62,6 +62,7 @@ export async function PATCH(request: Request) {
   try {
     const body = (await request.json()) as {
       sessionId: string;
+      titulo?: string | null;
       valorApostado?: number | null;
       resultado?: BetResultado | null;
     };
@@ -69,6 +70,17 @@ export async function PATCH(request: Request) {
     if (!body.sessionId) {
       return NextResponse.json(
         { error: "sessionId é obrigatório." },
+        { status: 400 }
+      );
+    }
+
+    if (
+      body.titulo !== undefined &&
+      body.titulo !== null &&
+      body.titulo.trim().length > 120
+    ) {
+      return NextResponse.json(
+        { error: "Título deve ter no máximo 120 caracteres." },
         { status: 400 }
       );
     }
@@ -85,6 +97,7 @@ export async function PATCH(request: Request) {
     }
 
     await updateAnalysisSession(body.sessionId, {
+      titulo: body.titulo,
       valorApostado: body.valorApostado,
       resultado: body.resultado,
     });

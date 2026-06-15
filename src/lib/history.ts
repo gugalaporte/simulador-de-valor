@@ -15,6 +15,7 @@ import { attachSessionMeta, sessionMetaMap } from "./session-meta";
 export interface HistorySession {
   sessionId: string;
   createdAt: string;
+  titulo: string | null;
   fontes: string[];
   melhorPreco: { fonte: string; odd: number };
   maiorUpside: { fonte: string; upside: number; classificacao: UpsideClassificacao };
@@ -60,6 +61,7 @@ export function historyRecordsToAnalysisResult(
     melhorPreco: sortedByOdd[sortedByOdd.length - 1],
     maiorUpside: sortedByUpside[0],
     rankingConfianca: sortedByUpside,
+    titulo: meta?.titulo ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
   };
