@@ -47,9 +47,9 @@ export function calculateOpportunityScore(
 export function classifyMarketEfficiency(
   eficiencia: number
 ): EficienciaClassificacao {
-  if (eficiencia > 1.4) return "Divergência Excepcional";
-  if (eficiencia >= 1.24) return "Divergência Relevante";
-  if (eficiencia >= 1.13) return "Pequena Divergência";
+  if (eficiencia > 1.5) return "Divergência Excepcional";
+  if (eficiencia >= 1.35) return "Divergência Relevante";
+  if (eficiencia >= 1.2) return "Pequena Divergência";
   return "Mercado Eficiente";
 }
 
