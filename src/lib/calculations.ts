@@ -37,7 +37,7 @@ function stdDev(values: number[]): number {
 export function classifyUpside(upside: number): UpsideClassificacao {
   const pct = upside * 100;
 
-  if (pct >= 45) return "Muito Forte";
+  if (pct >= 45) return "Excepcional";
   if (pct >= 35) return "Forte";
   if (pct >= 20) return "Moderado";
   return "Fraco";

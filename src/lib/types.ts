@@ -3,7 +3,7 @@ export interface PricingInput {
   fonte: string;
 }
 
-export type UpsideClassificacao = "Fraco" | "Moderado" | "Forte" | "Muito Forte";
+export type UpsideClassificacao = "Fraco" | "Moderado" | "Forte" | "Excepcional";
 
 export type ZScoreClassificacao =
   | "Normal"
@@ -13,7 +13,7 @@ export type ZScoreClassificacao =
 
 export type OportunidadeClassificacao =
   | "Ruído"
-  | "Interessante"
+  | "Moderado"
   | "Forte"
   | "Excepcional";
 

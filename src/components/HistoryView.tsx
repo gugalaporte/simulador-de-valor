@@ -260,7 +260,7 @@ export function HistoryView() {
               className={cn(
                 "w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-left transition-colors hover:border-slate-700 hover:bg-slate-900 active:scale-[0.99] disabled:opacity-60",
                 !session.analisePessoal &&
-                  session.maiorUpside.classificacao === "Muito Forte" &&
+                  session.maiorUpside.classificacao === "Excepcional" &&
                   "border-violet-500/30",
                 session.analisePessoal && "border-sky-500/30"
               )}

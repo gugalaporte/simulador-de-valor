@@ -1,4 +1,51 @@
 import type { HistorySession } from "./history";
+import type { UpsideClassificacao } from "./types";
+
+export type ReceitasClassificacao = UpsideClassificacao;
+
+export type ReceitasMarcador =
+  | "Análise Pessoal"
+  | "Odd Aumentada"
+  | "Impulso 25%+";
+
+export interface LucroPorClassificacao {
+  classificacao: ReceitasClassificacao;
+  lucro: number;
+  apostas: number;
+  greens: number;
+  taxaAcerto: number;
+}
+
+export interface LucroPorMarcador {
+  marcador: ReceitasMarcador;
+  lucro: number;
+  apostas: number;
+  greens: number;
+  taxaAcerto: number;
+}
+
+const CLASSIFICACAO_ORDER: ReceitasClassificacao[] = [
+  "Excepcional",
+  "Forte",
+  "Moderado",
+  "Fraco",
+];
+
+const MARCADOR_ORDER: ReceitasMarcador[] = [
+  "Análise Pessoal",
+  "Odd Aumentada",
+  "Impulso 25%+",
+];
+
+function getSessionMarcadores(session: HistorySession): ReceitasMarcador[] {
+  const marcadores: ReceitasMarcador[] = [];
+
+  if (session.analisePessoal) marcadores.push("Análise Pessoal");
+  if (session.superOdd) marcadores.push("Odd Aumentada");
+  if (session.impulso25Plus) marcadores.push("Impulso 25%+");
+
+  return marcadores;
+}
 
 export interface BetSummary {
   sessionId: string;
@@ -23,6 +70,8 @@ export interface ReceitasStats {
   maiorGanho: number;
   maiorPerda: number;
   lucroPorFonte: { fonte: string; lucro: number; apostas: number }[];
+  lucroPorClassificacao: LucroPorClassificacao[];
+  lucroPorMarcador: LucroPorMarcador[];
   apostasRecentes: BetSummary[];
 }
 
@@ -42,6 +91,14 @@ export function calculateReceitas(sessions: HistorySession[]): ReceitasStats {
   const apostasResolvidas: BetSummary[] = [];
   let pendentes = 0;
   const lucroPorFonteMap = new Map<string, { lucro: number; apostas: number }>();
+  const lucroPorClassificacaoMap = new Map<
+    ReceitasClassificacao,
+    { lucro: number; apostas: number; greens: number }
+  >();
+  const lucroPorMarcadorMap = new Map<
+    ReceitasMarcador,
+    { lucro: number; apostas: number; greens: number }
+  >();
 
   for (const session of sessions) {
     if (session.valorApostado === null || session.valorApostado <= 0) {
@@ -79,6 +136,33 @@ export function calculateReceitas(sessions: HistorySession[]): ReceitasStats {
     fonteStats.lucro += lucro;
     fonteStats.apostas += 1;
     lucroPorFonteMap.set(aposta.fonte, fonteStats);
+
+    if (!session.analisePessoal) {
+      const classificacao = session.maiorUpside.classificacao;
+      const classStats = lucroPorClassificacaoMap.get(classificacao) ?? {
+        lucro: 0,
+        apostas: 0,
+        greens: 0,
+      };
+
+      classStats.lucro += lucro;
+      classStats.apostas += 1;
+      if (session.resultado === "green") classStats.greens += 1;
+      lucroPorClassificacaoMap.set(classificacao, classStats);
+    }
+
+    for (const marcador of getSessionMarcadores(session)) {
+      const marcadorStats = lucroPorMarcadorMap.get(marcador) ?? {
+        lucro: 0,
+        apostas: 0,
+        greens: 0,
+      };
+
+      marcadorStats.lucro += lucro;
+      marcadorStats.apostas += 1;
+      if (session.resultado === "green") marcadorStats.greens += 1;
+      lucroPorMarcadorMap.set(marcador, marcadorStats);
+    }
   }
 
   const greens = apostasResolvidas.filter((a) => a.resultado === "green").length;
@@ -114,6 +198,32 @@ export function calculateReceitas(sessions: HistorySession[]): ReceitasStats {
     lucroPorFonte: Array.from(lucroPorFonteMap.entries())
       .map(([fonte, stats]) => ({ fonte, ...stats }))
       .sort((a, b) => b.lucro - a.lucro),
+    lucroPorClassificacao: CLASSIFICACAO_ORDER.filter((classificacao) =>
+      lucroPorClassificacaoMap.has(classificacao)
+    ).map((classificacao) => {
+      const stats = lucroPorClassificacaoMap.get(classificacao)!;
+
+      return {
+        classificacao,
+        lucro: stats.lucro,
+        apostas: stats.apostas,
+        greens: stats.greens,
+        taxaAcerto: stats.apostas > 0 ? stats.greens / stats.apostas : 0,
+      };
+    }),
+    lucroPorMarcador: MARCADOR_ORDER.filter((marcador) =>
+      lucroPorMarcadorMap.has(marcador)
+    ).map((marcador) => {
+      const stats = lucroPorMarcadorMap.get(marcador)!;
+
+      return {
+        marcador,
+        lucro: stats.lucro,
+        apostas: stats.apostas,
+        greens: stats.greens,
+        taxaAcerto: stats.apostas > 0 ? stats.greens / stats.apostas : 0,
+      };
+    }),
     apostasRecentes: apostasResolvidas
       .sort(
         (a, b) =>

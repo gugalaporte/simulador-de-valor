@@ -25,7 +25,7 @@ export function ComparisonTable({ fontes }: ComparisonTableProps) {
             key={fonte.fonte}
             className={cn(
               "border-slate-800/80",
-              fonte.classificacao === "Muito Forte" &&
+              fonte.classificacao === "Excepcional" &&
                 "border-violet-500/50 shadow-lg shadow-violet-500/10"
             )}
           >
@@ -74,7 +74,7 @@ export function ComparisonTable({ fontes }: ComparisonTableProps) {
                 key={fonte.fonte}
                 className={cn(
                   "border-t border-slate-800",
-                  fonte.classificacao === "Muito Forte" && "bg-violet-500/5"
+                  fonte.classificacao === "Excepcional" && "bg-violet-500/5"
                 )}
               >
                 <td className="px-4 py-3 font-medium">{fonte.fonte}</td>

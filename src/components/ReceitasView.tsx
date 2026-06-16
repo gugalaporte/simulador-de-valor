@@ -5,13 +5,20 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Loader2,
+  Layers,
   Target,
   TrendingUp,
   Wallet,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ReceitasStats } from "@/lib/receitas";
+import { getClassificacaoBadgeVariant } from "@/lib/classifications";
+import type {
+  LucroPorClassificacao,
+  LucroPorMarcador,
+  ReceitasMarcador,
+  ReceitasStats,
+} from "@/lib/receitas";
 import { cn, formatCurrency, formatDateTime, formatPercent } from "@/lib/utils";
 
 export function ReceitasView() {
@@ -143,6 +150,32 @@ export function ReceitasView() {
         </div>
       </section>
 
+      {stats.lucroPorClassificacao.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+            Lucro por Classificação
+          </h2>
+          <div className="space-y-2">
+            {stats.lucroPorClassificacao.map((item) => (
+              <ClassificacaoCard key={item.classificacao} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {stats.lucroPorMarcador.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+            Lucro por Tipo de Aposta
+          </h2>
+          <div className="space-y-2">
+            {stats.lucroPorMarcador.map((item) => (
+              <MarcadorCard key={item.marcador} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {stats.lucroPorFonte.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -215,6 +248,74 @@ export function ReceitasView() {
         </Card>
       )}
     </div>
+  );
+}
+
+function ClassificacaoCard({ item }: { item: LucroPorClassificacao }) {
+  return (
+    <Card className="border-slate-800/80">
+      <CardContent className="flex items-center justify-between gap-3 py-3">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-violet-400" />
+            <Badge variant={getClassificacaoBadgeVariant(item.classificacao)}>
+              {item.classificacao}
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-500">
+            {item.apostas} apostas · {item.greens} greens · Acerto{" "}
+            {formatPercent(item.taxaAcerto)}
+          </p>
+        </div>
+        <p
+          className={cn(
+            "shrink-0 font-mono font-semibold",
+            item.lucro >= 0 ? "text-emerald-400" : "text-rose-400"
+          )}
+        >
+          {formatCurrency(item.lucro)}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getMarcadorBadgeVariant(
+  marcador: ReceitasMarcador
+): "default" | "warning" | "success" | "strong" | "danger" {
+  switch (marcador) {
+    case "Odd Aumentada":
+      return "strong";
+    case "Impulso 25%+":
+      return "warning";
+    default:
+      return "default";
+  }
+}
+
+function MarcadorCard({ item }: { item: LucroPorMarcador }) {
+  return (
+    <Card className="border-slate-800/80">
+      <CardContent className="flex items-center justify-between gap-3 py-3">
+        <div className="space-y-1">
+          <Badge variant={getMarcadorBadgeVariant(item.marcador)}>
+            {item.marcador}
+          </Badge>
+          <p className="text-xs text-slate-500">
+            {item.apostas} apostas · {item.greens} greens · Acerto{" "}
+            {formatPercent(item.taxaAcerto)}
+          </p>
+        </div>
+        <p
+          className={cn(
+            "shrink-0 font-mono font-semibold",
+            item.lucro >= 0 ? "text-emerald-400" : "text-rose-400"
+          )}
+        >
+          {formatCurrency(item.lucro)}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 

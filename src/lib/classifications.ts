@@ -8,7 +8,7 @@ export function getClassificacaoBadgeVariant(
   classificacao: UpsideClassificacao
 ): "default" | "warning" | "success" | "strong" | "danger" {
   switch (classificacao) {
-    case "Muito Forte":
+    case "Excepcional":
       return "strong";
     case "Forte":
       return "success";
@@ -23,7 +23,7 @@ export function getClassificacaoUpsideColor(
   classificacao: UpsideClassificacao
 ): string {
   switch (classificacao) {
-    case "Muito Forte":
+    case "Excepcional":
       return "text-violet-300 font-semibold";
     case "Forte":
       return "text-green-400 font-semibold";
@@ -42,7 +42,7 @@ export function getOportunidadeBadgeVariant(
       return "strong";
     case "Forte":
       return "success";
-    case "Interessante":
+    case "Moderado":
       return "warning";
     default:
       return "default";
@@ -57,7 +57,7 @@ export function getOportunidadeColor(
       return "text-violet-300 font-semibold";
     case "Forte":
       return "text-green-400 font-semibold";
-    case "Interessante":
+    case "Moderado":
       return "text-yellow-400 font-semibold";
     default:
       return "text-slate-400";

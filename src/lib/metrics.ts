@@ -18,7 +18,7 @@ export function classifyOpportunityScore(
 ): OportunidadeClassificacao {
   if (score >= 85) return "Excepcional";
   if (score >= 66) return "Forte";
-  if (score >= 46) return "Interessante";
+  if (score >= 46) return "Moderado";
   return "Ruído";
 }
 
