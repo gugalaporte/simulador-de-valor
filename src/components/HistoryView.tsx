@@ -13,7 +13,11 @@ import {
   getClassificacaoUpsideColor,
 } from "@/lib/classifications";
 import type { AnalysisResult, BetResultado, SessionMeta } from "@/lib/types";
-import type { HistorySession } from "@/lib/history";
+import {
+  filterHistorySessions,
+  type HistoryFilter,
+  type HistorySession,
+} from "@/lib/history";
 import { cn, formatCurrency, formatDateTime, formatOdd, formatPercent } from "@/lib/utils";
 
 function ResultadoBadge({ resultado }: { resultado: BetResultado | null }) {
@@ -26,8 +30,16 @@ function ResultadoBadge({ resultado }: { resultado: BetResultado | null }) {
   );
 }
 
+const historyFilters: { id: HistoryFilter; label: string }[] = [
+  { id: "tudo", label: "Tudo" },
+  { id: "analises", label: "Análises registradas" },
+  { id: "em_andamento", label: "Apostas em andamento" },
+  { id: "finalizadas", label: "Apostas finalizadas" },
+];
+
 export function HistoryView() {
   const [sessions, setSessions] = useState<HistorySession[]>([]);
+  const [activeFilter, setActiveFilter] = useState<HistoryFilter>("tudo");
   const [selectedResult, setSelectedResult] = useState<AnalysisResult | null>(
     null
   );
@@ -172,6 +184,8 @@ export function HistoryView() {
     );
   }
 
+  const filteredSessions = filterHistorySessions(sessions, activeFilter);
+
   return (
     <div className="space-y-4">
       <Card className="border-slate-800/80">
@@ -185,6 +199,26 @@ export function HistoryView() {
           </p>
         </CardHeader>
       </Card>
+
+      {!isLoading && sessions.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {historyFilters.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => setActiveFilter(filter.id)}
+              className={cn(
+                "rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
+                activeFilter === filter.id
+                  ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-300"
+                  : "border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+              )}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && (
         <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
@@ -207,9 +241,17 @@ export function HistoryView() {
         </Card>
       )}
 
-      {!isLoading && sessions.length > 0 && (
+      {!isLoading && !error && sessions.length > 0 && filteredSessions.length === 0 && (
+        <Card className="border-slate-800/80">
+          <CardContent className="py-10 text-center text-sm text-slate-400">
+            Nenhum item encontrado para este filtro.
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && filteredSessions.length > 0 && (
         <div className="space-y-3">
-          {sessions.map((session) => (
+          {filteredSessions.map((session) => (
             <button
               key={session.sessionId}
               type="button"

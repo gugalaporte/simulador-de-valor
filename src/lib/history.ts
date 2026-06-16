@@ -149,3 +149,40 @@ export function groupHistoryBySession(
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 }
+
+export type HistoryFilter =
+  | "tudo"
+  | "analises"
+  | "em_andamento"
+  | "finalizadas";
+
+export function hasApostaRegistrada(session: HistorySession): boolean {
+  return session.valorApostado !== null && session.valorApostado > 0;
+}
+
+export function isApostaFinalizada(session: HistorySession): boolean {
+  return session.resultado === "green" || session.resultado === "red";
+}
+
+export function filterHistorySessions(
+  sessions: HistorySession[],
+  filter: HistoryFilter
+): HistorySession[] {
+  if (filter === "tudo") return sessions;
+
+  return sessions.filter((session) => {
+    const hasBet = hasApostaRegistrada(session);
+    const finalized = isApostaFinalizada(session);
+
+    switch (filter) {
+      case "analises":
+        return !hasBet;
+      case "em_andamento":
+        return hasBet && !finalized;
+      case "finalizadas":
+        return finalized;
+      default:
+        return true;
+    }
+  });
+}

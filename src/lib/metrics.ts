@@ -16,9 +16,9 @@ function clamp(value: number, min: number, max: number): number {
 export function classifyOpportunityScore(
   score: number
 ): OportunidadeClassificacao {
-  if (score >= 87) return "Excepcional";
-  if (score >= 68) return "Forte";
-  if (score >= 48) return "Interessante";
+  if (score >= 85) return "Excepcional";
+  if (score >= 66) return "Forte";
+  if (score >= 46) return "Interessante";
   return "Ruído";
 }
 
@@ -29,10 +29,10 @@ export function calculateOpportunityScore(
   gap: number,
   zScore: number
 ): number {
-  const upsideNorm = clamp(Math.max(0, upside) / 0.54, 0, 1);
-  const divergenciaNorm = clamp(divergencia / 0.44, 0, 1);
-  const gapNorm = clamp(Math.max(0, gap) / 0.17, 0, 1);
-  const zScoreNorm = clamp(Math.max(0, zScore) / 2.2, 0, 1);
+  const upsideNorm = clamp(Math.max(0, upside) / 0.5, 0, 1);
+  const divergenciaNorm = clamp(divergencia / 0.4, 0, 1);
+  const gapNorm = clamp(Math.max(0, gap) / 0.145, 0, 1);
+  const zScoreNorm = clamp(Math.max(0, zScore) / 2, 0, 1);
 
   const score =
     (upsideNorm * 0.35 +
