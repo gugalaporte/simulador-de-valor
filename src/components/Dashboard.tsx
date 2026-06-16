@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AnalysisResult, BetResultado } from "@/lib/types";
 import { formatOdd, formatPercent } from "@/lib/utils";
 import { AutoDiagnostico } from "./AutoDiagnostico";
+import { BetSuggestionCard } from "./BetSuggestionCard";
 import { ComparisonTable } from "./ComparisonTable";
 import { EficienciaMercado } from "./EficienciaMercado";
 import { ExecutiveSummary } from "./ExecutiveSummary";
@@ -21,6 +25,8 @@ interface DashboardProps {
 }
 
 export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardProps) {
+  const [valorSugerido, setValorSugerido] = useState<number | null>(null);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {titleEditable ? (
@@ -43,11 +49,20 @@ export function Dashboard({ result, titleEditable, onSessionUpdate }: DashboardP
       <EficienciaMercado eficiencia={result.eficienciaMercado} />
       <ComparisonTable fontes={result.fontes} />
 
+      {result.sugestaoAposta && (
+        <BetSuggestionCard
+          suggestion={result.sugestaoAposta}
+          classificacao={result.melhorOportunidade.oportunidadeClassificacao}
+          onApply={setValorSugerido}
+        />
+      )}
+
       <SessionBetForm
         sessionId={result.sessionId}
         initialValorApostado={result.valorApostado}
         initialResultado={result.resultado}
         melhorPrecoOdd={result.melhorPreco.odd}
+        valorSugerido={valorSugerido}
         onSaved={onSessionUpdate}
       />
 

@@ -145,8 +145,7 @@ export function ReceitasView() {
             label="Média por aposta"
             value={formatCurrency(stats.mediaLucroPorAposta)}
           />
-          <DetailItem label="Maior ganho" value={formatCurrency(stats.maiorGanho)} />
-          <DetailItem label="Maior perda" value={formatCurrency(stats.maiorPerda)} />
+          <DetailItem label="Unidade" value={formatCurrency(stats.unidade)} />
         </div>
       </section>
 

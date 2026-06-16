@@ -83,6 +83,16 @@ export interface SessionMeta {
   createdAt: string;
 }
 
+export interface BetSuggestion {
+  valor: number;
+  unidade: number;
+  multiplicador: number;
+  retornoPotencial: number;
+  lucroSeGreen: number;
+  resumo: string;
+  usandoUnidadePadrao: boolean;
+}
+
 export interface AnalysisResult {
   sessionId: string;
   titulo?: string | null;
@@ -102,4 +112,5 @@ export interface AnalysisResult {
   resultado?: BetResultado | null;
   impulso25Plus?: boolean;
   superOdd?: boolean;
+  sugestaoAposta?: BetSuggestion | null;
 }

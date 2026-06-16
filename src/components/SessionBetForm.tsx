@@ -14,6 +14,7 @@ interface SessionBetFormProps {
   initialValorApostado?: number | null;
   initialResultado?: BetResultado | null;
   melhorPrecoOdd: number;
+  valorSugerido?: number | null;
   onSaved?: (data: {
     valorApostado: number | null;
     resultado: BetResultado | null;
@@ -25,6 +26,7 @@ export function SessionBetForm({
   initialValorApostado = null,
   initialResultado = null,
   melhorPrecoOdd,
+  valorSugerido = null,
   onSaved,
 }: SessionBetFormProps) {
   const [valor, setValor] = useState(
@@ -41,6 +43,12 @@ export function SessionBetForm({
     setValor(initialValorApostado ? String(initialValorApostado) : "");
     setResultado(initialResultado);
   }, [initialValorApostado, initialResultado, sessionId]);
+
+  useEffect(() => {
+    if (valorSugerido !== null && valorSugerido > 0) {
+      setValor(valorSugerido.toFixed(2).replace(".", ","));
+    }
+  }, [valorSugerido]);
 
   const valorNumerico = parseFloat(valor.replace(",", "."));
   const retornoPotencial =

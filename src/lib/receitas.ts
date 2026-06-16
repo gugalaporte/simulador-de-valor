@@ -67,8 +67,7 @@ export interface ReceitasStats {
   totalApostasResolvidas: number;
   taxaAcerto: number;
   mediaLucroPorAposta: number;
-  maiorGanho: number;
-  maiorPerda: number;
+  unidade: number;
   lucroPorFonte: { fonte: string; lucro: number; apostas: number }[];
   lucroPorClassificacao: LucroPorClassificacao[];
   lucroPorMarcador: LucroPorMarcador[];
@@ -175,9 +174,6 @@ export function calculateReceitas(sessions: HistorySession[]): ReceitasStats {
     (sum, aposta) => sum + aposta.lucro,
     0
   );
-  const lucros = apostasResolvidas.map((aposta) => aposta.lucro);
-  const ganhos = lucros.filter((lucro) => lucro > 0);
-  const perdas = lucros.filter((lucro) => lucro < 0);
 
   return {
     lucroTotal,
@@ -193,8 +189,10 @@ export function calculateReceitas(sessions: HistorySession[]): ReceitasStats {
       apostasResolvidas.length > 0
         ? lucroTotal / apostasResolvidas.length
         : 0,
-    maiorGanho: ganhos.length > 0 ? Math.max(...ganhos) : 0,
-    maiorPerda: perdas.length > 0 ? Math.min(...perdas) : 0,
+    unidade:
+      apostasResolvidas.length > 0
+        ? totalApostado / apostasResolvidas.length
+        : 0,
     lucroPorFonte: Array.from(lucroPorFonteMap.entries())
       .map(([fonte, stats]) => ({ fonte, ...stats }))
       .sort((a, b) => b.lucro - a.lucro),

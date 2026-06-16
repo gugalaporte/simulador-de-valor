@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { calculateBetSuggestion } from "@/lib/bet-suggestion";
 import {
-  groupHistoryBySession,
   historyRecordsToAnalysisResult,
   listAllSessions,
 } from "@/lib/history";
+import { calculateReceitas } from "@/lib/receitas";
 import {
   fetchAnalysisHistory,
   fetchAnalysisSessions,
@@ -42,12 +43,23 @@ export async function GET(request: Request) {
         );
       }
 
+      const result = historyRecordsToAnalysisResult(
+        sessionId,
+        sessionRecords,
+        meta
+      );
+      const unidade = calculateReceitas(
+        listAllSessions(records, sessions)
+      ).unidade;
+
       return NextResponse.json({
-        result: historyRecordsToAnalysisResult(
-          sessionId,
-          sessionRecords,
-          meta
-        ),
+        result: {
+          ...result,
+          sugestaoAposta: calculateBetSuggestion(
+            result,
+            unidade > 0 ? unidade : null
+          ),
+        },
       });
     }
 
