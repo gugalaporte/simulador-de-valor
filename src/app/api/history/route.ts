@@ -126,12 +126,30 @@ export async function PATCH(request: Request) {
       );
     }
 
-    await updateAnalysisSession(body.sessionId, {
-      titulo: body.titulo,
-      valorApostado: body.valorApostado,
-      resultado: body.resultado,
-      oddAposta: body.oddAposta,
-    });
+    const sessionUpdates: {
+      titulo?: string | null;
+      valorApostado?: number | null;
+      resultado?: BetResultado | null;
+      oddAposta?: number | null;
+    } = {};
+
+    if (body.titulo !== undefined) {
+      sessionUpdates.titulo = body.titulo;
+    }
+
+    if (body.valorApostado !== undefined) {
+      sessionUpdates.valorApostado = body.valorApostado;
+    }
+
+    if (body.resultado !== undefined) {
+      sessionUpdates.resultado = body.resultado;
+    }
+
+    if (body.oddAposta !== undefined) {
+      sessionUpdates.oddAposta = body.oddAposta;
+    }
+
+    await updateAnalysisSession(body.sessionId, sessionUpdates);
 
     return NextResponse.json({ success: true });
   } catch (error) {

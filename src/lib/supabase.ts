@@ -124,27 +124,32 @@ export async function updateAnalysisSession(
     oddAposta?: number | null;
   }
 ) {
-  const payload: Record<string, unknown> = { session_id: sessionId };
+  const payload: Record<string, unknown> = {};
 
-  if ("titulo" in updates) {
+  if (updates.titulo !== undefined) {
     payload.titulo = updates.titulo?.trim() || null;
   }
 
-  if ("valorApostado" in updates) {
+  if (updates.valorApostado !== undefined) {
     payload.valor_apostado = updates.valorApostado;
   }
 
-  if ("resultado" in updates) {
+  if (updates.resultado !== undefined) {
     payload.resultado = updates.resultado;
   }
 
-  if ("oddAposta" in updates) {
+  if (updates.oddAposta !== undefined) {
     payload.odd_aposta = updates.oddAposta;
+  }
+
+  if (Object.keys(payload).length === 0) {
+    return;
   }
 
   const { error } = await supabase
     .from("analysis_sessions")
-    .upsert(payload, { onConflict: "session_id" });
+    .update(payload)
+    .eq("session_id", sessionId);
 
   if (error) {
     throw error;
