@@ -11,6 +11,7 @@ export function attachSessionMeta<T extends { sessionId: string }>(
   metaMap: Map<string, SessionMeta>
 ): T & {
   titulo: string | null;
+  casaAposta: string | null;
   valorApostado: number | null;
   resultado: BetResultado | null;
   impulso25Plus: boolean;
@@ -24,6 +25,7 @@ export function attachSessionMeta<T extends { sessionId: string }>(
   return {
     ...item,
     titulo: meta?.titulo ?? null,
+    casaAposta: meta?.casaAposta ?? null,
     valorApostado: meta?.valorApostado ?? null,
     resultado: meta?.resultado ?? null,
     impulso25Plus: meta?.impulso25Plus ?? false,

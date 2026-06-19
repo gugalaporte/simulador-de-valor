@@ -5,13 +5,16 @@ import { Check, Loader2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FONTES } from "@/lib/sources";
 import type { BetResultado } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function PersonalBetForm() {
   const [expanded, setExpanded] = useState(false);
   const [titulo, setTitulo] = useState("");
+  const [casaAposta, setCasaAposta] = useState("");
   const [valor, setValor] = useState("");
   const [odd, setOdd] = useState("");
   const [resultado, setResultado] = useState<BetResultado | null>(null);
@@ -21,6 +24,7 @@ export function PersonalBetForm() {
 
   function resetForm() {
     setTitulo("");
+    setCasaAposta("");
     setValor("");
     setOdd("");
     setResultado(null);
@@ -33,6 +37,11 @@ export function PersonalBetForm() {
 
     const valorApostado = parseFloat(valor.replace(",", "."));
     const oddAposta = parseFloat(odd.replace(",", "."));
+
+    if (!casaAposta) {
+      setError("Selecione a casa de aposta.");
+      return;
+    }
 
     if (Number.isNaN(valorApostado) || valorApostado <= 0) {
       setError("Informe um valor apostado válido.");
@@ -52,6 +61,7 @@ export function PersonalBetForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           titulo: titulo.trim() || undefined,
+          casaAposta,
           valorApostado,
           oddAposta,
           resultado,
@@ -113,6 +123,25 @@ export function PersonalBetForm() {
               maxLength={120}
               onChange={(e) => setTitulo(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="personal-casa">Casa de aposta</Label>
+            <Select
+              id="personal-casa"
+              value={casaAposta}
+              onChange={(e) => setCasaAposta(e.target.value)}
+              required
+            >
+              <option value="" disabled>
+                Selecione a casa
+              </option>
+              {FONTES.map((fonte) => (
+                <option key={fonte} value={fonte}>
+                  {fonte}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FONTES } from "@/lib/sources";
 import type { BetResultado, SessionMeta } from "@/lib/types";
 import { cn, formatCurrency, formatDateTime, formatOdd } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ interface PersonalBetDetailProps {
 
 export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailProps) {
   const [titulo, setTitulo] = useState(bet.titulo ?? "");
+  const [casaAposta, setCasaAposta] = useState(bet.casaAposta ?? "");
   const [valor, setValor] = useState(
     bet.valorApostado ? String(bet.valorApostado) : ""
   );
@@ -29,6 +32,7 @@ export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailP
 
   useEffect(() => {
     setTitulo(bet.titulo ?? "");
+    setCasaAposta(bet.casaAposta ?? "");
     setValor(bet.valorApostado ? String(bet.valorApostado) : "");
     setOdd(bet.oddAposta ? String(bet.oddAposta) : "");
     setResultado(bet.resultado);
@@ -40,6 +44,11 @@ export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailP
 
     const valorApostado = valor.trim() === "" ? null : parseFloat(valor.replace(",", "."));
     const oddAposta = odd.trim() === "" ? null : parseFloat(odd.replace(",", "."));
+
+    if (!casaAposta) {
+      setError("Selecione a casa de aposta.");
+      return;
+    }
 
     if (valorApostado !== null && (Number.isNaN(valorApostado) || valorApostado <= 0)) {
       setError("Informe um valor apostado válido.");
@@ -60,6 +69,7 @@ export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailP
         body: JSON.stringify({
           sessionId: bet.sessionId,
           titulo: titulo.trim() || null,
+          casaAposta,
           valorApostado,
           oddAposta,
           resultado,
@@ -75,6 +85,7 @@ export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailP
       const updated: SessionMeta = {
         ...bet,
         titulo: titulo.trim() || null,
+        casaAposta,
         valorApostado,
         oddAposta,
         resultado,
@@ -121,6 +132,27 @@ export function PersonalBetDetail({ bet, onBack, onUpdated }: PersonalBetDetailP
               maxLength={120}
               onChange={(e) => setTitulo(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`personal-casa-${bet.sessionId}`}>Casa de aposta</Label>
+            <Select
+              id={`personal-casa-${bet.sessionId}`}
+              value={casaAposta}
+              onChange={(e) => setCasaAposta(e.target.value)}
+            >
+              <option value="" disabled>
+                Selecione a casa
+              </option>
+              {casaAposta && !FONTES.includes(casaAposta as (typeof FONTES)[number]) && (
+                <option value={casaAposta}>{casaAposta}</option>
+              )}
+              {FONTES.map((fonte) => (
+                <option key={fonte} value={fonte}>
+                  {fonte}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

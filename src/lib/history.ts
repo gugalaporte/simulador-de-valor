@@ -31,15 +31,17 @@ export interface HistorySession {
 
 function personalSessionToHistory(meta: SessionMeta): HistorySession {
   const label = meta.titulo?.trim() || "Análise Pessoal";
+  const casa = meta.casaAposta?.trim() || null;
   const odd = meta.oddAposta ?? 1;
+  const fonte = casa ?? label;
 
   return {
     sessionId: meta.sessionId,
     createdAt: meta.createdAt,
     titulo: meta.titulo,
-    fontes: [],
-    melhorPreco: { fonte: label, odd },
-    maiorUpside: { fonte: label, upside: 0, classificacao: "Fraco" },
+    fontes: casa ? [casa] : [],
+    melhorPreco: { fonte, odd },
+    maiorUpside: { fonte, upside: 0, classificacao: "Fraco" },
     consensoProbabilidade: 0,
     valorApostado: meta.valorApostado,
     resultado: meta.resultado,
@@ -162,6 +164,44 @@ export function hasApostaRegistrada(session: HistorySession): boolean {
 
 export function isApostaFinalizada(session: HistorySession): boolean {
   return session.resultado === "green" || session.resultado === "red";
+}
+
+export function calcularLucroSessao(session: HistorySession): number | null {
+  if (!isApostaFinalizada(session)) return null;
+  if (session.valorApostado === null || session.valorApostado <= 0) return null;
+
+  const odd = session.oddAposta ?? session.melhorPreco.odd;
+  const valor = session.valorApostado;
+
+  if (session.resultado === "green") {
+    return valor * (odd - 1);
+  }
+
+  return -valor;
+}
+
+export function calcularLucroPotencialSessao(
+  session: HistorySession
+): number | null {
+  if (!hasApostaRegistrada(session) || isApostaFinalizada(session)) {
+    return null;
+  }
+
+  const odd = session.oddAposta ?? session.melhorPreco.odd;
+  const valor = session.valorApostado!;
+
+  return valor * (odd - 1);
+}
+
+export function sumTotalApostado(sessions: HistorySession[]): number {
+  return sessions.reduce((sum, session) => sum + (session.valorApostado ?? 0), 0);
+}
+
+export function sumLucroPotencial(sessions: HistorySession[]): number {
+  return sessions.reduce((sum, session) => {
+    const lucro = calcularLucroPotencialSessao(session);
+    return sum + (lucro ?? 0);
+  }, 0);
 }
 
 export function filterHistorySessions(

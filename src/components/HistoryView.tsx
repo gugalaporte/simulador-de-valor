@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronRight, Clock, History, Loader2 } from "lucide-react";
+import { ChevronRight, Clock, History, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,10 @@ import {
 } from "@/lib/classifications";
 import type { AnalysisResult, BetResultado, SessionMeta } from "@/lib/types";
 import {
+  calcularLucroSessao,
   filterHistorySessions,
+  sumLucroPotencial,
+  sumTotalApostado,
   type HistoryFilter,
   type HistorySession,
 } from "@/lib/history";
@@ -32,9 +35,9 @@ function ResultadoBadge({ resultado }: { resultado: BetResultado | null }) {
 
 const historyFilters: { id: HistoryFilter; label: string }[] = [
   { id: "tudo", label: "Tudo" },
-  { id: "analises", label: "Análises registradas" },
   { id: "em_andamento", label: "Apostas em andamento" },
   { id: "finalizadas", label: "Apostas finalizadas" },
+  { id: "analises", label: "Análises registradas" },
 ];
 
 export function HistoryView() {
@@ -47,6 +50,7 @@ export function HistoryView() {
     useState<SessionMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
@@ -146,13 +150,52 @@ export function HistoryView() {
               oddAposta: bet.oddAposta,
               resultado: bet.resultado,
               melhorPreco: {
-                fonte: bet.titulo?.trim() || "Análise Pessoal",
+                fonte: bet.casaAposta?.trim() || bet.titulo?.trim() || "Análise Pessoal",
                 odd: bet.oddAposta ?? session.melhorPreco.odd,
               },
             }
           : session
       )
     );
+  }
+
+  async function handleDeleteSession(session: HistorySession) {
+    const label =
+      session.titulo?.trim() ||
+      (session.analisePessoal ? "Análise Pessoal" : session.fontes.join(" · "));
+
+    if (
+      !window.confirm(
+        `Apagar "${label}"?\n\nEsta ação não pode ser desfeita.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingSessionId(session.sessionId);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/history?sessionId=${session.sessionId}`,
+        { method: "DELETE" }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Falha ao apagar análise.");
+      }
+
+      setSessions((current) =>
+        current.filter((item) => item.sessionId !== session.sessionId)
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao apagar análise."
+      );
+    } finally {
+      setDeletingSessionId(null);
+    }
   }
 
   if (selectedPersonalBet) {
@@ -185,6 +228,14 @@ export function HistoryView() {
   }
 
   const filteredSessions = filterHistorySessions(sessions, activeFilter);
+  const showResumoEmAndamento =
+    activeFilter === "em_andamento" && filteredSessions.length > 0;
+  const totalApostado = showResumoEmAndamento
+    ? sumTotalApostado(filteredSessions)
+    : 0;
+  const lucroPotencialTotal = showResumoEmAndamento
+    ? sumLucroPotencial(filteredSessions)
+    : 0;
 
   return (
     <div className="space-y-4">
@@ -251,21 +302,30 @@ export function HistoryView() {
 
       {!isLoading && filteredSessions.length > 0 && (
         <div className="space-y-3">
-          {filteredSessions.map((session) => (
-            <button
-              key={session.sessionId}
-              type="button"
-              onClick={() => openSession(session.sessionId)}
-              disabled={isLoadingDetail}
-              className={cn(
-                "w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-left transition-colors hover:border-slate-700 hover:bg-slate-900 active:scale-[0.99] disabled:opacity-60",
-                !session.analisePessoal &&
-                  session.maiorUpside.classificacao === "Excepcional" &&
-                  "border-violet-500/30",
-                session.analisePessoal && "border-sky-500/30"
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
+          {filteredSessions.map((session) => {
+            const lucro =
+              activeFilter === "finalizadas"
+                ? calcularLucroSessao(session)
+                : null;
+
+            return (
+              <div
+                key={session.sessionId}
+                className={cn(
+                  "flex items-stretch overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70 transition-colors hover:border-slate-700",
+                  !session.analisePessoal &&
+                    session.maiorUpside.classificacao === "Excepcional" &&
+                    "border-violet-500/30",
+                  session.analisePessoal && "border-sky-500/30"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => openSession(session.sessionId)}
+                  disabled={isLoadingDetail || deletingSessionId === session.sessionId}
+                  className="min-w-0 flex-1 p-4 text-left transition-colors hover:bg-slate-900 active:scale-[0.99] disabled:opacity-60"
+                >
+                  <div className="flex items-start justify-between gap-3">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-slate-400">
                     <Clock className="h-3.5 w-3.5" />
@@ -293,6 +353,14 @@ export function HistoryView() {
                   <div className="flex flex-wrap gap-3 text-sm">
                     {session.analisePessoal ? (
                       <>
+                        {session.fontes.length > 0 && (
+                          <span className="text-slate-400">
+                            Casa:{" "}
+                            <span className="font-mono text-slate-200">
+                              {session.melhorPreco.fonte}
+                            </span>
+                          </span>
+                        )}
                         <span className="text-slate-400">
                           Odd:{" "}
                           <span className="font-mono text-emerald-400">
@@ -345,12 +413,73 @@ export function HistoryView() {
                     )}
                       </>
                     )}
+                    {lucro !== null && (
+                      <span className="text-slate-400">
+                        Lucro:{" "}
+                        <span
+                          className={cn(
+                            "font-mono font-semibold",
+                            lucro >= 0 ? "text-emerald-400" : "text-rose-400"
+                          )}
+                        >
+                          {formatCurrency(lucro)}
+                        </span>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-500" />
               </div>
-            </button>
-          ))}
+                </button>
+
+                {activeFilter === "tudo" && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSession(session)}
+                    disabled={deletingSessionId === session.sessionId}
+                    aria-label="Apagar análise"
+                    className="flex shrink-0 items-center justify-center border-l border-slate-800 px-4 text-slate-500 transition-colors hover:bg-rose-500/10 hover:text-rose-400 disabled:opacity-60"
+                  >
+                    {deletingSessionId === session.sessionId ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {showResumoEmAndamento && (
+            <Card className="border-cyan-500/30 bg-cyan-500/5">
+              <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Resumo — apostas em andamento
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {filteredSessions.length}{" "}
+                    {filteredSessions.length === 1 ? "aposta" : "apostas"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-6">
+                  <div>
+                    <p className="text-xs text-slate-400">Total apostado</p>
+                    <p className="font-mono text-lg font-semibold text-amber-300">
+                      {formatCurrency(totalApostado)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">Lucro total potencial</p>
+                    <p className="font-mono text-lg font-semibold text-emerald-400">
+                      {formatCurrency(lucroPotencialTotal)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

@@ -74,6 +74,7 @@ export type BetResultado = "green" | "red";
 export interface SessionMeta {
   sessionId: string;
   titulo: string | null;
+  casaAposta: string | null;
   valorApostado: number | null;
   resultado: BetResultado | null;
   impulso25Plus: boolean;

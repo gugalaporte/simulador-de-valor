@@ -9,6 +9,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 interface SessionRow {
   session_id: string;
   titulo: string | null;
+  casa_aposta: string | null;
   valor_apostado: number | null;
   resultado: BetResultado | null;
   impulso_25_plus: boolean | null;
@@ -22,6 +23,7 @@ function mapSessionRow(row: SessionRow): SessionMeta {
   return {
     sessionId: row.session_id,
     titulo: row.titulo?.trim() || null,
+    casaAposta: row.casa_aposta?.trim() || null,
     valorApostado:
       row.valor_apostado !== null ? Number(row.valor_apostado) : null,
     resultado: row.resultado,
@@ -91,6 +93,7 @@ export async function fetchAnalysisSessions(): Promise<SessionMeta[]> {
 
 export async function createPersonalBet(data: {
   titulo?: string | null;
+  casaAposta: string;
   valorApostado: number;
   oddAposta: number;
   resultado?: BetResultado | null;
@@ -100,6 +103,7 @@ export async function createPersonalBet(data: {
   const { error } = await supabase.from("analysis_sessions").insert({
     session_id: sessionId,
     titulo: data.titulo?.trim() || "Análise Pessoal",
+    casa_aposta: data.casaAposta,
     valor_apostado: data.valorApostado,
     odd_aposta: data.oddAposta,
     resultado: data.resultado ?? null,
@@ -119,6 +123,7 @@ export async function updateAnalysisSession(
   sessionId: string,
   updates: {
     titulo?: string | null;
+    casaAposta?: string | null;
     valorApostado?: number | null;
     resultado?: BetResultado | null;
     oddAposta?: number | null;
@@ -128,6 +133,10 @@ export async function updateAnalysisSession(
 
   if (updates.titulo !== undefined) {
     payload.titulo = updates.titulo?.trim() || null;
+  }
+
+  if (updates.casaAposta !== undefined) {
+    payload.casa_aposta = updates.casaAposta?.trim() || null;
   }
 
   if (updates.valorApostado !== undefined) {
@@ -153,5 +162,25 @@ export async function updateAnalysisSession(
 
   if (error) {
     throw error;
+  }
+}
+
+export async function deleteAnalysisSession(sessionId: string) {
+  const { error: historyError } = await supabase
+    .from("analysis_history")
+    .delete()
+    .eq("session_id", sessionId);
+
+  if (historyError) {
+    throw historyError;
+  }
+
+  const { error: sessionError } = await supabase
+    .from("analysis_sessions")
+    .delete()
+    .eq("session_id", sessionId);
+
+  if (sessionError) {
+    throw sessionError;
   }
 }

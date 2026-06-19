@@ -5,7 +5,9 @@ import {
   listAllSessions,
 } from "@/lib/history";
 import { calculateReceitas } from "@/lib/receitas";
+import { isFonteValida } from "@/lib/sources";
 import {
+  deleteAnalysisSession,
   fetchAnalysisHistory,
   fetchAnalysisSessions,
   updateAnalysisSession,
@@ -81,6 +83,7 @@ export async function PATCH(request: Request) {
     const body = (await request.json()) as {
       sessionId: string;
       titulo?: string | null;
+      casaAposta?: string | null;
       valorApostado?: number | null;
       resultado?: BetResultado | null;
       oddAposta?: number | null;
@@ -126,8 +129,20 @@ export async function PATCH(request: Request) {
       );
     }
 
+    if (
+      body.casaAposta !== undefined &&
+      body.casaAposta !== null &&
+      !isFonteValida(body.casaAposta)
+    ) {
+      return NextResponse.json(
+        { error: "Selecione uma casa de aposta válida." },
+        { status: 400 }
+      );
+    }
+
     const sessionUpdates: {
       titulo?: string | null;
+      casaAposta?: string | null;
       valorApostado?: number | null;
       resultado?: BetResultado | null;
       oddAposta?: number | null;
@@ -135,6 +150,10 @@ export async function PATCH(request: Request) {
 
     if (body.titulo !== undefined) {
       sessionUpdates.titulo = body.titulo;
+    }
+
+    if (body.casaAposta !== undefined) {
+      sessionUpdates.casaAposta = body.casaAposta;
     }
 
     if (body.valorApostado !== undefined) {
@@ -157,6 +176,31 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(
       { error: "Não foi possível salvar os dados da aposta." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get("sessionId");
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "sessionId é obrigatório." },
+        { status: 400 }
+      );
+    }
+
+    await deleteAnalysisSession(sessionId);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erro ao apagar sessão:", error);
+
+    return NextResponse.json(
+      { error: "Não foi possível apagar esta análise." },
       { status: 500 }
     );
   }
